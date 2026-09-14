@@ -64,6 +64,9 @@ local function InitDB()
 	if GX_DB.minimap.degrees == nil then
 		GX_DB.minimap.degrees = 220
 	end
+	if GX_DB.autosaveNoInstances == nil then
+		GX_DB.autosaveNoInstances = true
+	end
 end
 
 InitDB()
@@ -321,12 +324,36 @@ end
 -- ===========================================================================
 
 local autosaveTimer = nil
+local autosaveSkipNoticeShown = false
 
 local function CancelAutosaveTimer()
 	if autosaveTimer then
 		autosaveTimer:Cancel()
 		autosaveTimer = nil
 	end
+	autosaveSkipNoticeShown = false
+end
+
+-- Defer the autosave reload while inside an instance (dungeon/raid/arena/BG)
+-- if the "skip reload in instances" option is on. Reloading mid-content drops
+-- the UI (brief freeze) and can be disruptive.
+local function IsReloadAllowed()
+	return not (GX_DB.autosaveNoInstances ~= false and IsInInstance())
+end
+
+local function ArmAutosaveTimer(seconds)
+	autosaveTimer = C_Timer.NewTimer(seconds, function()
+		autosaveTimer = nil
+		if IsReloadAllowed() then
+			ReloadUI()
+		else
+			if not autosaveSkipNoticeShown then
+				autosaveSkipNoticeShown = true
+				print(addonLabel() .. "Autosave reload skipped - player is in an instance.")
+			end
+			ArmAutosaveTimer(seconds)
+		end
+	end)
 end
 
 local function SetAutosave(seconds, silent)
@@ -341,10 +368,7 @@ local function SetAutosave(seconds, silent)
 	end
 
 	GX_DB.autosaveMinutes = seconds / 60
-	autosaveTimer = C_Timer.NewTimer(seconds, function()
-		autosaveTimer = nil
-		ReloadUI()
-	end)
+	ArmAutosaveTimer(seconds)
 	if not silent then
 		print(addonLabel() .. string.format("Autosave enabled - UI reload every %d s.", seconds))
 		print(addonLabel() .. "Reload flushes SavedVariables; expect a brief (< 1 s) UI freeze.")
@@ -355,10 +379,7 @@ end
 local function ArmAutosaveFromSaved()
 	if GX_DB.autosaveMinutes and GX_DB.autosaveMinutes > 0 then
 		local minutes = GX_DB.autosaveMinutes
-		autosaveTimer = C_Timer.NewTimer(minutes * 60, function()
-			autosaveTimer = nil
-			ReloadUI()
-		end)
+		ArmAutosaveTimer(minutes * 60)
 		print(addonLabel() .. string.format("Autosave active - UI reload every %.0f min.", minutes))
 	end
 end
@@ -678,6 +699,19 @@ local function BuildSettingsPanel(panel)
 	autoInfo:SetJustifyH("LEFT")
 	autoInfo:SetText("0 = disabled. Every N minutes the UI reloads so the client writes\nSavedVariables to disk and watcher.py updates totalgold.txt for OBS.")
 
+	local noInstancesCheck = CreateFrame("CheckButton", nil, panel, "UICheckButtonTemplate")
+	noInstancesCheck:SetSize(26, 26)
+	noInstancesCheck:SetPoint("TOPLEFT", 20, -244)
+	noInstancesCheck:SetScript("OnClick", function(self)
+		InitDB()
+		GX_DB.autosaveNoInstances = self:GetChecked() == true
+	end)
+	panel.NoInstancesCheck = noInstancesCheck
+
+	local noInstancesLabel = panel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+	noInstancesLabel:SetPoint("LEFT", noInstancesCheck, "RIGHT", 8, 0)
+	noInstancesLabel:SetText("Skip autosave reload while in an instance")
+
 	-- Buttons ----------------------------------------------------------------
 	local showButton = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
 	showButton:SetSize(190, 26)
@@ -712,6 +746,7 @@ local function BuildSettingsPanel(panel)
 		InitDB()
 		self.TotalLabel:SetText("Current total: " .. GetStyledMoneyString(GetTotalGold()))
 		self.MinimapCheck:SetChecked(not GX_DB.minimap or GX_DB.minimap.shown ~= false)
+		self.NoInstancesCheck:SetChecked(GX_DB.autosaveNoInstances ~= false)
 		local minutes = math.max(math.floor((GX_DB.autosaveMinutes or 0) + 0.5), 0)
 		self.AutoSlider:SetValue(minutes)
 		self.AutoValue:SetText(minutes <= 0 and "off" or (minutes .. " min"))
