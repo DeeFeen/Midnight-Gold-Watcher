@@ -1,0 +1,14 @@
+## Interface: 120100
+## Title: GX - Gold Export
+## Notes: Tracks total account gold across all characters, shows it on demand and exports it for OBS overlays.
+## Author: GX
+## Version: 1.0.0
+## SavedVariables: GX_DB
+## Category: Gold
+## IconTexture: Interface\Icons\INV_Misc_Coin_05
+## AddonCompartmentFunc: GX_OnAddonCompartmentClick
+## AddonCompartmentFuncOnEnter: GX_OnAddonCompartmentEnter
+## AddonCompartmentFuncOnLeave: GX_OnAddonCompartmentLeave
+
+GX_UI.xml
+GX.lua
