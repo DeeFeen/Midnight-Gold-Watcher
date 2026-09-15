@@ -555,10 +555,10 @@ static void ShowTrayMenu() {
 static void OnTrayIcon(WPARAM, LPARAM lp) {
     switch (LOWORD(lp)) {
         case WM_LBUTTONDBLCLK:
+        case WM_LBUTTONUP:
             ShowWindow(g_hwnd, SW_RESTORE);
             SetForegroundWindow(g_hwnd);
             break;
-        case WM_LBUTTONUP:
         case WM_RBUTTONUP:
             ShowTrayMenu();
             break;
