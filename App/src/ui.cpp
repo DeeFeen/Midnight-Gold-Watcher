@@ -847,9 +847,12 @@ static LRESULT CALLBACK GoldWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
         MakeChild(hwnd, L"BUTTON", L"Save && Apply", WS_TABSTOP | BS_OWNERDRAW, 0,
                   IDC_BTN_SAVE, &r, g_fntUi, false);
 
-        hEd = MakeChild(hwnd, L"EDIT", L"", ES_READONLY | ES_AUTOHSCROLL, WS_EX_CLIENTEDGE,
+        hEd = MakeChild(hwnd, L"EDIT", L"", ES_READONLY | ES_AUTOHSCROLL, 0,
                   IDC_ED_OUTPATH, &r, g_fntUi, true);
-        if (hEd) SetWindowTheme(hEd, L"DarkMode_Explorer", NULL);
+        if (hEd) {
+            SetWindowTheme(hEd, L"DarkMode_Explorer", NULL);
+            SendMessageW(hEd, EM_SETREADONLY, TRUE, 0);
+        }
         MakeChild(hwnd, L"BUTTON", L"Copy", WS_TABSTOP | BS_OWNERDRAW, 0,
                   IDC_BTN_COPY, &r, g_fntUi, true);
         UpdateOutputPathText();
