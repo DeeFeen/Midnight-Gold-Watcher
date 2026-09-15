@@ -1,4 +1,4 @@
-#ifndef _WIN32_WINNT
+﻿#ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0A00
 #endif
 #include "ui.h"
@@ -352,7 +352,7 @@ static void PaintMain(HWND hwnd) {
     DrawCard(mem, g_layout.bigCard, C_PANEL, C_EDGE);
     DrawTxt(mem, g_layout.bigCap, L"ACCOUNT GOLD TOTAL", g_fCaption, C_DIM,
             DT_LEFT | DT_SINGLELINE);
-    std::wstring big = formatted.empty() ? L"—" : formatted;
+    std::wstring big = formatted.empty() ? L"â€”" : formatted;
     DrawTxt(mem, g_layout.bigVal, big.c_str(), g_fBig, C_GOLD,
             DT_LEFT | DT_SINGLELINE);
     std::wstring sub;
@@ -406,7 +406,7 @@ static void PaintMain(HWND hwnd) {
 
     RECT statusText = g_layout.statusL;
     statusText.left += dotSize + (int)(8.0 * g_dpi / 96.0);
-    std::wstring statusLine = paused ? L"Paused" : (status.empty() ? L"Starting…" : status);
+    std::wstring statusLine = paused ? L"Paused" : (status.empty() ? L"Startingâ€¦" : status);
     DrawTxt(mem, statusText, statusLine.c_str(), g_fSub,
             paused ? C_AMB : C_DIM, DT_LEFT | DT_SINGLELINE);
 
@@ -507,11 +507,11 @@ static void UpdateTrayTip() {
     {
         std::lock_guard<std::mutex> lk(g_stateMu);
         if (g_paused)
-            tip = L"GX Gold Monitor — paused";
+            tip = L"GX Gold Monitor â€” paused";
         else if (g_formatted.empty())
-            tip = L"GX Gold Monitor — waiting for SavedVariables";
+            tip = L"GX Gold Monitor â€” waiting for SavedVariables";
         else
-            tip = L"GX — " + g_formatted;
+            tip = L"GX â€” " + g_formatted;
     }
     NOTIFYICONDATAW nid{};
     nid.cbSize = sizeof(NOTIFYICONDATAW);
@@ -811,7 +811,7 @@ static LRESULT CALLBACK GoldWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
         MakeChild(hwnd, L"STATIC",
                   L"SAVED VARIABLES \x2014 GX.lua  (empty = auto-detect)",
                   SS_LEFT, 0, IDC_LBL_FILE, &r, g_fntUi, false);
-        HWND hEd = MakeChild(hwnd, L"EDIT", L"", WS_TABSTOP | ES_AUTOHSCROLL, WS_EX_CLIENTEDGE,
+        HWND         hEd = MakeChild(hwnd, L"EDIT", L"", WS_TABSTOP | ES_AUTOHSCROLL, 0,
                   IDC_ED_FILE, &r, g_fntUi, false);
         if (hEd) SetWindowTheme(hEd, L"DarkMode_Explorer", NULL);
         MakeChild(hwnd, L"BUTTON", L"Browse", WS_TABSTOP | BS_OWNERDRAW, 0,
@@ -819,7 +819,7 @@ static LRESULT CALLBACK GoldWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
         MakeChild(hwnd, L"STATIC",
                   L"ACCOUNT FILTER  (optional, e.g. 410566417#1)",
                   SS_LEFT, 0, IDC_LBL_ACCT, &r, g_fntUi, false);
-        hEd = MakeChild(hwnd, L"EDIT", L"", WS_TABSTOP | ES_AUTOHSCROLL, WS_EX_CLIENTEDGE,
+        hEd = MakeChild(hwnd, L"EDIT", L"", WS_TABSTOP | ES_AUTOHSCROLL, 0,
                   IDC_ED_ACCT, &r, g_fntUi, false);
         if (hEd) SetWindowTheme(hEd, L"DarkMode_Explorer", NULL);
         MakeChild(hwnd, L"BUTTON", L"Auto-detect", WS_TABSTOP | BS_OWNERDRAW, 0,
@@ -827,7 +827,7 @@ static LRESULT CALLBACK GoldWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
         MakeChild(hwnd, L"STATIC",
                   L"OUTPUT TEXT FILE  (OBS reads this)",
                   SS_LEFT, 0, IDC_LBL_OUT, &r, g_fntUi, false);
-        hEd = MakeChild(hwnd, L"EDIT", L"", WS_TABSTOP | ES_AUTOHSCROLL, WS_EX_CLIENTEDGE,
+        hEd = MakeChild(hwnd, L"EDIT", L"", WS_TABSTOP | ES_AUTOHSCROLL, 0,
                   IDC_ED_OUT, &r, g_fntUi, false);
         if (hEd) SetWindowTheme(hEd, L"DarkMode_Explorer", NULL);
         MakeChild(hwnd, L"BUTTON", L"Browse", WS_TABSTOP | BS_OWNERDRAW, 0,
@@ -835,7 +835,7 @@ static LRESULT CALLBACK GoldWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
         MakeChild(hwnd, L"STATIC",
                   L"POLL INTERVAL SECONDS  (default 2, min 0.5)",
                   SS_LEFT, 0, IDC_LBL_POLL, &r, g_fntUi, false);
-        hEd = MakeChild(hwnd, L"EDIT", L"", WS_TABSTOP | ES_AUTOHSCROLL, WS_EX_CLIENTEDGE,
+        hEd = MakeChild(hwnd, L"EDIT", L"", WS_TABSTOP | ES_AUTOHSCROLL, 0,
                   IDC_ED_POLL, &r, g_fntUi, false);
         if (hEd) SetWindowTheme(hEd, L"DarkMode_Explorer", NULL);
         MakeChild(hwnd, L"BUTTON", L"Raw numeric output (bare copper number)",
@@ -1084,7 +1084,7 @@ int RunApp(HINSTANCE hinst) {
     RegisterClassW(&wc);
 
     double s = g_dpi / 96.0;
-    g_hwnd = CreateWindowExW(WS_EX_APPWINDOW, L"GXGoldWnd", L"GX — Gold Export",
+    g_hwnd = CreateWindowExW(WS_EX_APPWINDOW, L"GXGoldWnd", L"GX â€” Gold Export",
                              WS_OVERLAPPEDWINDOW,
                              CW_USEDEFAULT, CW_USEDEFAULT,
                              (int)(520 * s), (int)(470 * s),
