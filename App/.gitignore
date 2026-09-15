@@ -1,0 +1,12 @@
+# Built output (see build.bat / GXMonitor.vcxproj)
+GXMonitor.exe
+GXMonitor.exe.manifest
+*.exe.manifest
+
+# Build artifacts
+build/
+
+# Runtime-generated
+GX_Monitor.ini
+gx_debug.log
+*.log

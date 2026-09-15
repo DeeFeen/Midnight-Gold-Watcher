@@ -34,3 +34,5 @@ totalgold.txt
 Thumbs.db
 Desktop.ini
 *.lnk
+
+# GX Monitor runtime debug loggx_debug.log
